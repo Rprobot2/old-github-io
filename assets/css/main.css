@@ -2799,7 +2799,7 @@ input, select, textarea {
 			}
 
 			.tiles article:after {
-				background-color: rgba(36, 41, 67, 0.25);
+				background-color: rgba(36, 41, 67, 0.2);
 				content: '';
 				display: block;
 				height: 100%;
