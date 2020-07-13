@@ -1,0 +1,269 @@
+<!DOCTYPE HTML>
+<!--
+	Forty by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>R's E-Portfolio</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo"><strong>Forty</strong> <span>by HTML5 UP</span></a>
+						<nav>
+							<a href="#menu">Menu</a>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<ul class="links">
+							<li><a href="index.html">Home</a></li>
+							<li><a href="landing.html">Landing</a></li>
+							<li><a href="generic.html">Generic</a></li>
+							<li><a href="elements.html">Elements</a></li>
+						</ul>
+						<ul class="actions stacked">
+							<li><a href="#" class="button primary fit">Get Started</a></li>
+							<li><a href="#" class="button fit">Log In</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main" class="alt">
+
+						<!-- One -->
+							<section id="one">
+								<div class="inner">
+									<header class="major">
+										<h1>Godot Tinkering</h1>
+									</header>
+									<p>I started to use Godot in 2018.  I had tried out Unity, Unreal Engine and Gamemaker and they were all overcomplicated.  I continued to look for game engines, and eventually I stumbled upon Godot.  It's open source (which is great), but it also has a fantastic implementation of class hierarchies.  It's been fun to use and I've made many projects in it - note that I haven't finished any yet.  I've created 4 different half-finished games in it, but unfortunately with the death of my laptop I've lost the files.  Fortunately, I have backups of the game that my friends and I were working on.</p>
+                                    
+									<p><span class="image left"><img src="images/pGodot Tinkering/knight.png" alt="" /></span>We hadn't come close to finishing it yet, but rather we were simply developing it.  The sprites are mostly temporary, so take them with a grain of salt.  In terms of progress that I had made, I had created an ability system which applies 'effects' to entities - these 'effects' automatically delete themselves once they are supposed to expire, and can take a multitude of forms.  For example, they could be a healing potion, a healing circle, poison, a damaging projectile, a dash, etc.  I had also implemented an ability system for the characters.  As of yet I have created one of the three different classes.  I made all my code modular so that whenever I created a new entity or character I can simply edit variables and make a few new functions.</p>
+                                        
+                                    <p><span class="image right"><img src="images/pGodot%20Tinkering/Pink_ROCK.png" alt="" /></span>The one class that I was creating was the 'Druid'.  The Druid has a special focus on healing the team.  The abilities that I implemented were the 'dash', where the Druid has a fixed velocity in the direction of the mouse cursor for a set amount of time, while also being unable to move during this time.  As well, I had a 'healing circle' which would apply healing whenever the character walked into it.</p>
+                                    
+									<p>After implementing those two abilities, it was time to make a framework for enemies.  Initially the Godot implementation of A* navigation was dysfunctional, however I eventually managed to make it work.  The enemies could then navigate toward you, around obstacles, whenever you were within a fixed distance.  I had also implemented a health bar, which (temporarily) was just a modified progress bar.  There was also a character health bar, based on points, which would have individual tiles changing their sprite in order to indicate their individual health.</p>
+                                    
+                                    <span class="image main"><img src="images/pGodot%20Tinkering/prettyhottbh3.gif" alt="" /></span>
+                                    
+                                    
+                                    
+                                    <div class="row">
+											<div class="col-6 col-12-small">
+												<h3>Example ability; 'Dash'</h3>
+								                <pre><code>
+
+# DEFAULT ABILITY STUFF DEFAULT ABILITY STUFF DEFAULT ABILITY STUFF DEFAULT ABILITY STUFF 
+# DEFAULT ABILITY STUFF DEFAULT ABILITY STUFF DEFAULT ABILITY STUFF DEFAULT ABILITY STUFF 
+
+extends Node
+var ability_index = null
+onready var parent = get_parent()
+
+func _ready():
+	if self.name in GLOBAL.global_ability_strings[0]:
+		parent.connect("DoA_L%s" % str(GLOBAL.global_ability_strings[0].find(self.name)), self, "do_ability")		# Gets the location and assigns the relevant string as a signal
+		ability_index = ["Left", GLOBAL.global_ability_strings[0].find(self.name)]
+		
+	elif self.name in GLOBAL.global_ability_strings[1]:
+		parent.connect("DoA_R%s" % str(GLOBAL.global_ability_strings[1].find(self.name)), self, "do_ability")		# Gets the location and assigns the relevant string as a signal
+		ability_index = ["Right", GLOBAL.global_ability_strings[1].find(self.name)]
+
+
+func _on_anim_timer_timeout():
+	var new_progress_value = $"cooldown timer".time_left
+	parent.get_node("UI Overlay/Test UI 3/HBoxContainer/%s-Margin/%s/%s Ability/Image/TextureProgress" % [ability_index[1], ability_index[1], ability_index[0]]).value = int(new_progress_value*100)
+
+
+func _on_cooldown_timer_timeout():
+	parent.get_node("UI Overlay/Test UI 3/HBoxContainer/%s-Margin/%s/%s Ability/Image/TextureProgress" % [ability_index[1], ability_index[1], ability_index[0]]).value = 0
+	$"anim timer".stop()
+	
+
+func default_on_do_ability():
+	$"anim timer".start()
+	$"cooldown timer".start()
+	
+
+	
+# UNIQUE ABILITY STUFF UNIQUE ABILITY STUFF UNIQUE ABILITY STUFF UNIQUE ABILITY STUFF 
+# UNIQUE ABILITY STUFF UNIQUE ABILITY STUFF UNIQUE ABILITY STUFF UNIQUE ABILITY STUFF 
+
+var Dash_Effect = load("res://Effects/D-Dash/D-Dash-Effect.tscn")
+	
+func do_ability():
+	default_on_do_ability()
+	
+	var Dash_Effect_i = Dash_Effect.instance()
+	Dash_Effect_i.connect("change_player_velocity", self.get_parent(), "change_player_velocity_func")
+	Dash_Effect_i.connect("change_player_movement_enabled", self.get_parent(), "change_player_movement_enabled_func")
+	Dash_Effect_i.connect("change_player_abilities_enabled", self.get_parent(), "change_player_abilities_enabled_func")
+	# Adds the dash effect to the player
+	parent.add_child(Dash_Effect_i)
+	
+
+
+
+</code></pre>
+											</div>
+											<div class="col-6 col-12-small">
+												<h3>Basic movement code</h3>
+												<pre><code>
+func I_move():
+	right = int(Input.is_action_pressed("ui_right"))
+	left = int(Input.is_action_pressed("ui_left"))
+	up = int(Input.is_action_pressed("ui_up"))
+	down = int(Input.is_action_pressed("ui_down"))
+	
+	if (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")) and (Input.is_action_pressed("ui_up") or Input.is_action_pressed("ui_down")):
+		Velocity.x = SPEED * 0.707 * (right - left)
+		Velocity.y = SPEED * 0.707 * (down - up)
+	else:
+		Velocity.x = SPEED * (right - left)
+		Velocity.y = SPEED * (down - up)
+
+</code></pre>
+                                                
+                                                <h3>Example of effect; 'Healing Circle'</h3>
+												<pre><code>
+extends Node
+
+signal change_player_health
+
+func _on_Timer_timeout():	
+	emit_signal("change_player_health", 1)
+
+
+</code></pre>
+                                                <h3>Player ability system</h3>
+												<pre><code>func I_change_ability():
+	if Input.is_action_just_pressed("1"):
+		if current_ability == 1:
+			current_ability = 0
+		else:
+			current_ability = 1
+			
+	if Input.is_action_just_pressed("2"):
+		if current_ability == 2:
+			current_ability = 0
+		else:
+			current_ability = 2
+
+
+func I_use_ability():
+	
+	if Input.is_action_just_pressed("Left_Click"):
+		if abilities_enabled[0][current_ability]:
+			abilities_enabled[0][current_ability] = false
+			emit_signal(signal_list[0][current_ability])							# Activate the ability
+			current_ability = 0
+
+	if Input.is_action_just_pressed("Right_Click"):
+		if abilities_enabled[1][current_ability]:
+			abilities_enabled[1][current_ability] = false
+			emit_signal(signal_list[1][current_ability])							# Activate the ability
+			current_ability = 0
+			
+
+</code></pre>
+											</div>
+                                    </div>
+								</div>
+							</section>
+
+					</div>
+
+				<!-- Contact -->
+					<section id="contact">
+						<div class="inner">
+							<section>
+								<form method="post" action="#">
+									<div class="fields">
+										<div class="field half">
+											<label for="name">Name</label>
+											<input type="text" name="name" id="name" />
+										</div>
+										<div class="field half">
+											<label for="email">Email</label>
+											<input type="text" name="email" id="email" />
+										</div>
+										<div class="field">
+											<label for="message">Message</label>
+											<textarea name="message" id="message" rows="6"></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send Message" class="primary" /></li>
+										<li><input type="reset" value="Clear" /></li>
+									</ul>
+								</form>
+							</section>
+							<section class="split">
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-envelope"></span>
+										<h3>Email</h3>
+										<a href="#">information@untitled.tld</a>
+									</div>
+								</section>
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-phone"></span>
+										<h3>Phone</h3>
+										<span>(000) 000-0000 x12387</span>
+									</div>
+								</section>
+								<section>
+									<div class="contact-method">
+										<span class="icon solid alt fa-home"></span>
+										<h3>Address</h3>
+										<span>1234 Somewhere Road #5432<br />
+										Nashville, TN 00000<br />
+										United States of America</span>
+									</div>
+								</section>
+							</section>
+						</div>
+					</section>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<ul class="icons">
+								<li><a href="#" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
+								<li><a href="#" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
+								<li><a href="#" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a></li>
+								<li><a href="#" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+								<li><a href="#" class="icon brands alt fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+							</ul>
+							<ul class="copyright">
+								<li>&copy; Untitled</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
